@@ -6,16 +6,19 @@ import { BitcoinIcon } from './components/icons/BitcoinIcon';
 import { EthIcon } from './components/icons/EthIcon';
 import { LtcIcon } from './components/icons/LtcIcon';
 import { XmrIcon } from './components/icons/XmrIcon';
+import { UsdIcon } from './components/icons/UsdIcon';
 
-const supportedCryptos = [
+export const supportedCurrencies = [
   { currency: Currency.BTC, name: 'Bitcoin', icon: <BitcoinIcon className="w-6 h-6" /> },
   { currency: Currency.ETH, name: 'Ethereum', icon: <EthIcon className="w-6 h-6" /> },
   { currency: Currency.LTC, name: 'Litecoin', icon: <LtcIcon className="w-6 h-6" /> },
   { currency: Currency.XMR, name: 'Monero', icon: <XmrIcon className="w-6 h-6" /> },
+  { currency: Currency.USD, name: 'US Dollar', icon: <UsdIcon className="w-6 h-6" /> },
 ];
 
 const App: React.FC = () => {
-  const [selectedCrypto, setSelectedCrypto] = useState<Currency>(Currency.BTC);
+  const [fromCurrency, setFromCurrency] = useState<Currency>(Currency.BTC);
+  const [toCurrency, setToCurrency] = useState<Currency>(Currency.USD);
   const [prices, setPrices] = useState<Partial<Record<Currency, number>>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,34 +57,39 @@ const App: React.FC = () => {
 
   useEffect(() => {
     handleFetchPrices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleFetchPrices]);
-  
-  const currentPrice = prices[selectedCrypto] ?? null;
+
+  const handleSelectFromCurrency = (currency: Currency) => {
+    if (currency === toCurrency) {
+      // If user selects the same currency as the 'to' currency, swap them
+      setToCurrency(fromCurrency);
+    }
+    setFromCurrency(currency);
+  };
 
   return (
-    <div className="min-h-screen w-full bg-slate-900 text-white flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
+    <div className="min-h-screen w-full bg-slate-900 text-white flex flex-col items-center justify-center p-4 font-serif relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-slate-800 [mask-image:linear-gradient(to_bottom,white_20%,transparent_100%)]"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-900/30"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-900/40"></div>
       <main className="z-10 flex flex-col items-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-          Crypto to USD Converter
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-orange-200 to-green-300">
+          Crypto Converter
         </h1>
         <p className="text-slate-400 text-center mb-8 max-w-md">
-          Instantly convert cryptocurrencies to US Dollars with the latest exchange rates, powered by Google Gemini.
+          Instantly convert between cryptocurrencies and USD with the latest exchange rates.
         </p>
         
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {supportedCryptos.map(({ currency, name, icon }) => (
+          {supportedCurrencies.filter(c => c.currency !== toCurrency).map(({ currency, name, icon }) => (
             <button
               key={currency}
-              onClick={() => setSelectedCrypto(currency)}
+              onClick={() => handleSelectFromCurrency(currency)}
               className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 border-2 ${
-                selectedCrypto === currency
-                  ? 'bg-cyan-500/20 border-cyan-500 text-white'
+                fromCurrency === currency
+                  ? 'bg-orange-500/20 border-orange-500 text-white'
                   : 'bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-slate-600 text-slate-300'
               }`}
-              aria-pressed={selectedCrypto === currency}
+              aria-pressed={fromCurrency === currency}
             >
               {icon}
               {name}
@@ -90,8 +98,11 @@ const App: React.FC = () => {
         </div>
 
         <ConverterCard
-          cryptoCurrency={selectedCrypto}
-          initialPrice={currentPrice}
+          fromCurrency={fromCurrency}
+          toCurrency={toCurrency}
+          setFromCurrency={setFromCurrency}
+          setToCurrency={setToCurrency}
+          prices={prices}
           isLoading={isLoading}
           error={error}
           onRefresh={handleFetchPrices}
