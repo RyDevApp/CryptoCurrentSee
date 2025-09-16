@@ -1,0 +1,5 @@
+{
+  "name": "Crypto to USD Converter",
+  "description": "An application that automatically fetches the latest prices for Bitcoin, Ethereum, Litecoin, and Monero in USD using the Gemini API and provides a real-time conversion tool.",
+  "requestFramePermissions": []
+}
